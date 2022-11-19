@@ -3,10 +3,22 @@ from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
 
-from .models import Product
+from .models import Product, Order, ProductOrder
 from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
+
+
+class ProductOrderInline(admin.TabularInline):
+    model = ProductOrder
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = 'first_name', 'address',
+    inlines = [
+        ProductOrderInline,
+    ]
 
 
 class RestaurantMenuItemInline(admin.TabularInline):

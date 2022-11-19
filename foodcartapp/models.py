@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 
 
 class Restaurant(models.Model):
@@ -121,3 +121,45 @@ class RestaurantMenuItem(models.Model):
 
     def __str__(self):
         return f"{self.restaurant.name} - {self.product.name}"
+
+
+class Order(models.Model):
+    first_name = models.CharField(
+        max_length=64,
+    )
+    second_name = models.CharField(
+        max_length=64,
+    )
+    phone_number_regex = RegexValidator(
+        regex='^\+?1?\d{8,15}$',
+    )
+    phone_number = models.CharField(
+        validators=[phone_number_regex,],
+        max_length=16,
+        unique=True,
+    )
+    address = models.CharField(
+        max_length=256,
+    )
+
+    def __str__(self):
+        return f'{self.first_name} {self.second_name}'
+
+
+class ProductOrder(models.Model):
+    product = models.ForeignKey(
+        'Product',
+        related_name='product',
+        on_delete=models.CASCADE,
+    )
+    order = models.ForeignKey(
+        'Order',
+        related_name='order',
+        on_delete=models.CASCADE,
+    )
+    quantity = models.PositiveIntegerField(
+
+    )
+
+    def __str__(self):
+        return f'{self.product.name} {self.quantity}'
