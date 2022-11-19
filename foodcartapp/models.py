@@ -136,7 +136,6 @@ class Order(models.Model):
     phone_number = models.CharField(
         validators=[phone_number_regex,],
         max_length=16,
-        unique=True,
     )
     address = models.CharField(
         max_length=256,
