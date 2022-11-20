@@ -1,5 +1,3 @@
-import json
-
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
@@ -68,7 +66,7 @@ def register_order(request):
     serializer.is_valid(raise_exception=True)
     order = serializer.data
 
-    order_obj = Order.objects.create(
+    order_obj = Order.custome_manager.create(
         first_name=order['firstname'],
         second_name=order['lastname'],
         phone_number=order['phonenumber'],

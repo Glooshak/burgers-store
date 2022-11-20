@@ -124,6 +124,20 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
+
+    class OrderQuerySet(models.QuerySet):
+
+        def obtain_whole_price(self):
+
+            return self.prefetch_related(
+                models.Prefetch(
+                    'order', queryset=ProductOrder.objects.prefetch_related('product')
+            )).annotate(
+                order_price=models.Sum(models.F('order__product__price') * models.F('order__quantity'))
+            )
+
+    custome_manager = OrderQuerySet.as_manager()
+
     first_name = models.CharField(
         max_length=64,
     )
