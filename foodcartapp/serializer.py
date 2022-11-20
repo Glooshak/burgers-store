@@ -13,7 +13,7 @@ class ProductsListSerializer(serializers.Serializer):
         try:
             Product.objects.get(pk=value)
         except Product.DoesNotExist:
-            raise ValidationError(f'The product with this id was not found - {value}')
+            raise ValidationError(f'The product with id [{value}] was not found')
         return value
 
 
