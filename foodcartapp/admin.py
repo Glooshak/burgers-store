@@ -1,12 +1,14 @@
 from django.contrib import admin
-from django.shortcuts import reverse
+from django.shortcuts import reverse, redirect
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import Product, Order, ProductOrder
 from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
+from star_burger.settings import ALLOWED_HOSTS
 
 
 class ProductOrderInline(admin.TabularInline):
@@ -15,13 +17,25 @@ class ProductOrderInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    list_display = [
+        'pk', 'first_name', 'address',
+    ]
+
+    def response_change(self, request, obj):
+
+        if 'next' in request.GET and url_has_allowed_host_and_scheme(
+            url := request.GET['next'], ALLOWED_HOSTS,
+        ):
+            return redirect(url)
+
+        return super().response_change(request, obj)
 
     def save_formset(self, request, form, formset, change):
         product_order_set = formset.save(commit=False)
         for product_order in product_order_set:
             if not product_order.price:
                 product_order.price = product_order.product.price
-                product_order.save()
+            product_order.save()
         formset.save_m2m()
 
     inlines = [
