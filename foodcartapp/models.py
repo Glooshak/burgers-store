@@ -129,14 +129,26 @@ class Order(models.Model):
 
         def obtain_whole_price(self):
 
-            return self.prefetch_related(
+            return self.exclude(status=Order.StatusChoice.FINISHED).prefetch_related(
                 models.Prefetch(
                     'order', queryset=ProductOrder.objects.prefetch_related('product')
             )).annotate(
                 order_price=models.Sum(models.F('order__product__price') * models.F('order__quantity'))
             )
 
+    class StatusChoice(models.TextChoices):
+        GOTTEN = 'GT', 'Заказ принят в обработку'
+        PACKING = 'PA', 'На сборе'
+        DELIVERTING = 'DE', 'Отдано курьеру'
+        FINISHED = 'FI', 'Заказ доставлен и закончен'
+
     custome_manager = OrderQuerySet.as_manager()
+
+    status = models.CharField(
+        max_length=2,
+        choices=StatusChoice.choices,
+        default=StatusChoice.GOTTEN,
+    )
 
     first_name = models.CharField(
         max_length=64,
