@@ -144,13 +144,15 @@ class Order(models.Model):
 
     custome_manager = OrderQuerySet.as_manager()
 
+    comment = models.TextField(
+        blank=True,
+    )
     status = models.CharField(
         max_length=2,
         choices=StatusChoice.choices,
         default=StatusChoice.GOTTEN,
         db_index=True,
     )
-
     first_name = models.CharField(
         max_length=64,
     )
