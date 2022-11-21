@@ -148,6 +148,7 @@ class Order(models.Model):
         max_length=2,
         choices=StatusChoice.choices,
         default=StatusChoice.GOTTEN,
+        db_index=True,
     )
 
     first_name = models.CharField(
