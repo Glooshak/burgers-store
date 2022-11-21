@@ -72,11 +72,23 @@ def register_order(request):
         phone_number=order['phonenumber'],
         address=order['address'],
     )
+
     for product in order['products']:
+        original_product = Product.objects.get(
+            pk=product['product'],
+        )
         ProductOrder.objects.create(
             order=order_obj,
-            product=Product.objects.get(pk=product['product']),
+            product=original_product,
             quantity=product['quantity'],
+            price=original_product.price
         )
+    #
+    # for product in order['products']:
+    #     ProductOrder.objects.create(
+    #         order=order_obj,
+    #         product=Product.objects.get(pk=product['product']),
+    #         quantity=product['quantity'],
+    #     )
 
     return Response(order)
