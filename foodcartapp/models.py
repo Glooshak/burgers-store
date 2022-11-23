@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, RegexValidator
+from django.utils import timezone
 
 
 class Restaurant(models.Model):
@@ -168,6 +169,23 @@ class Order(models.Model):
     )
     address = models.CharField(
         max_length=256,
+    )
+    registrated_at = models.DateField(
+        verbose_name='Registrated at',
+        db_index=True,
+        default=timezone.now,
+    )
+    called_at = models.DateField(
+        verbose_name='Called at',
+        db_index=True,
+        blank=True,
+        null=True,
+    )
+    delivered_at = models.DateField(
+        verbose_name='Delivered at',
+        db_index=True,
+        blank=True,
+        null=True,
     )
 
     def __str__(self):
