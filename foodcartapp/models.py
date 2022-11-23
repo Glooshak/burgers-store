@@ -4,6 +4,19 @@ from django.utils import timezone
 
 
 class Restaurant(models.Model):
+
+    class RestaurantQuerySet(models.QuerySet):
+
+        def get_restaurants_with_items(self):
+            return self.prefetch_related(
+                models.Prefetch(
+                    'menu_items',
+                    queryset=RestaurantMenuItem.objects.select_related('product')
+                )
+            ).filter(menu_items__availability=True).distinct()
+
+    objects = RestaurantQuerySet.as_manager()
+
     name = models.CharField(
         'название',
         max_length=50
@@ -130,12 +143,29 @@ class Order(models.Model):
 
         def obtain_whole_price(self):
 
-            return self.exclude(status=Order.StatusChoice.FINISHED).prefetch_related(
+            not_finished_orders = self.exclude(status=Order.StatusChoice.FINISHED).prefetch_related(
                 models.Prefetch(
                     'order', queryset=ProductOrder.objects.prefetch_related('product')
             )).annotate(
                 order_price=models.Sum(models.F('order__product__price') * models.F('order__quantity'))
             )
+
+            restaurants = Restaurant.objects.get_restaurants_with_items()
+            orders = not_finished_orders.select_related('performer')
+
+            for order in orders:
+                if order.performer:
+                    continue
+                products_in_order = order.order
+                product_pks = {product.product.pk for product in products_in_order.all()}
+                order.performers = []
+                for restaurant in restaurants:
+                    restaurant_menu = restaurant.menu_items.all()
+                    available_product_pks = {rm.product.pk for rm in restaurant_menu}
+                    if product_pks.issubset(available_product_pks):
+                        order.performers.append(restaurant)
+
+            return orders
 
     class StatusChoice(models.TextChoices):
         GOTTEN = 'GT', 'Заказ принят в обработку'
@@ -149,6 +179,14 @@ class Order(models.Model):
 
     custome_manager = OrderQuerySet.as_manager()
 
+    performer = models.ForeignKey(
+        Restaurant,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='Ресторан(ы)',
+        related_name='orders',
+    )
     pay_method = models.CharField(
         max_length=2,
         choices=PayMethodChoice.choices,
