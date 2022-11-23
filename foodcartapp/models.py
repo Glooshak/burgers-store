@@ -143,8 +143,18 @@ class Order(models.Model):
         DELIVERTING = 'DE', 'Отдано курьеру'
         FINISHED = 'FI', 'Заказ доставлен и закончен'
 
+    class PayMethodChoice(models.TextChoices):
+        IN_CASH = 'IC', 'Наличными'
+        WITH_CREDIT_CARD = 'WC', 'Карточкой'
+
     custome_manager = OrderQuerySet.as_manager()
 
+    pay_method = models.CharField(
+        max_length=2,
+        choices=PayMethodChoice.choices,
+        default=PayMethodChoice.IN_CASH,
+        db_index=True,
+    )
     comment = models.TextField(
         blank=True,
     )
