@@ -3,7 +3,10 @@ from typing import Optional
 import requests
 from geopy import distance
 
+from distances.utils import cache_spot
 
+
+@cache_spot
 def fetch_coordinates(apikey, address):
     base_url = "https://geocode-maps.yandex.ru/1.x"
     response = requests.get(base_url, params={
