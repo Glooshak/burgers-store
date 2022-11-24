@@ -45,9 +45,11 @@
               {% for performer in order.performers %}
                 <li>
                   <details>
-                    <summary>{{ performer.name }}</summary>
-                    {{ performer.address }}
+                    <summary>{{ performer.restaurent.name }} - {{ performer.distance }} км</summary>
+                    <br/>
+                    {{ performer.restaurent.address }}
                   </details>
+                  <br/>
                 </li>
               {% endfor %}
             </ul>

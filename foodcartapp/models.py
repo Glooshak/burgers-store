@@ -1,6 +1,10 @@
 from django.db import models
 from django.core.validators import MinValueValidator, RegexValidator
 from django.utils import timezone
+from django.conf import settings
+
+from .utils import ProperRestaurent
+from .geo import fetch_coordinates, calculate_distance
 
 
 class Restaurant(models.Model):
@@ -163,7 +167,15 @@ class Order(models.Model):
                     restaurant_menu = restaurant.menu_items.all()
                     available_product_pks = {rm.product.pk for rm in restaurant_menu}
                     if product_pks.issubset(available_product_pks):
-                        order.performers.append(restaurant)
+                        proper_restaurent = ProperRestaurent(
+                            restaurant,
+                            calculate_distance(
+                                fetch_coordinates(settings.YANDEX_GEOCODER_API_KEY, order.address),
+                                fetch_coordinates(settings.YANDEX_GEOCODER_API_KEY, restaurant.address),
+                            )
+                        )
+                        order.performers.append(proper_restaurent)
+                order.performers.sort(key=lambda performer: performer.distance)
 
             return orders
 
